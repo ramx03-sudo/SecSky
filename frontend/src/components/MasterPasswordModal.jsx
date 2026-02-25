@@ -5,12 +5,12 @@ import { motion, AnimatePresence } from 'framer-motion';
 import toast from 'react-hot-toast';
 
 export default function MasterPasswordModal() {
-    const { user, isVaultUnlocked, unlockVault } = useAuth();
+    const { user, masterKey, unlockVault } = useAuth();
     const [password, setPassword] = useState('');
     const [isLoading, setIsLoading] = useState(false);
 
     // Only show if logged in but vault is locked
-    const isOpen = user && !isVaultUnlocked;
+    const isOpen = user && !masterKey;
 
     const handleSubmit = async (e) => {
         e.preventDefault();

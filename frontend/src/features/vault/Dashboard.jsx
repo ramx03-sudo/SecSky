@@ -117,6 +117,10 @@ export default function Dashboard() {
     };
 
     const executeView = async (fileRec, password) => {
+        if (!masterKey || !(masterKey instanceof CryptoKey)) {
+            toast.error("Vault is locked. Unlock first.");
+            return;
+        }
         setViewingId(fileRec.id);
         const loadingToast = toast.loading("Decrypting securely...");
         try {
@@ -163,6 +167,10 @@ export default function Dashboard() {
     };
 
     const executeDownload = async (fileRec, password) => {
+        if (!masterKey || !(masterKey instanceof CryptoKey)) {
+            toast.error("Vault is locked. Unlock first.");
+            return;
+        }
         setDownloadingId(fileRec.id);
         const loadingToast = toast.loading("Decrypting securely...");
         try {
@@ -231,6 +239,10 @@ export default function Dashboard() {
 
     const handleUploadSubmit = async () => {
         if (!selectedFile) return;
+        if (!masterKey || !(masterKey instanceof CryptoKey)) {
+            toast.error("Vault is locked. Unlock first.");
+            return;
+        }
         if (useFilePassword && filePassword.length < 4) {
             toast.error('File password must be at least 4 characters');
             return;
@@ -308,7 +320,8 @@ export default function Dashboard() {
                 </div>
                 <button
                     onClick={openFileDialog}
-                    className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-2 relative z-10"
+                    disabled={!masterKey}
+                    className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-2 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <UploadCloud className="w-5 h-5" />
                     <span>Upload File</span>
