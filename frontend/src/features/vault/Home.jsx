@@ -38,9 +38,13 @@ export default function Home() {
                         <span>SecSky Architecture</span>
                     </div>
 
-                    <h1 className="text-5xl md:text-7xl font-semibold tracking-tight mb-8 text-white">
+                    <h1 className="text-5xl md:text-7xl font-semibold tracking-tight mb-4 text-white">
                         Encrypted before it <br className="hidden md:block" /> leaves your device.
                     </h1>
+
+                    <p className="text-sm text-zinc-500 tracking-wide uppercase font-medium mb-8">
+                        Designed & Engineered by <span className="text-zinc-300">Ram Mamillapalli</span>
+                    </p>
 
                     <p className="text-lg md:text-xl text-zinc-400 max-w-2xl mb-12 font-light leading-relaxed">
                         Zero-knowledge cloud storage powered by client-side AES-256-GCM encryption. Only you hold the keys.
@@ -270,27 +274,6 @@ export default function Home() {
                     </Magnetic>
                 </div>
             </section>
-
-            {/* Footer */}
-            <footer className="py-12 px-6 border-t border-zinc-800/50 bg-zinc-950">
-                <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
-                    <div className="flex items-center space-x-2 text-zinc-400">
-                        <Shield className="w-5 h-5 text-indigo-500" />
-                        <span className="font-medium">SecSky</span>
-                    </div>
-                    <div className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500">
-                        <a href="#" className="hover:text-zinc-300 transition-colors">About SecSky</a>
-                        <a href="#" className="hover:text-zinc-300 transition-colors">Security</a>
-                        <a href="#" className="hover:text-zinc-300 transition-colors">Privacy Policy</a>
-                        <a href="#" className="hover:text-zinc-300 transition-colors">Terms of Service</a>
-                        <a href="#" className="hover:text-zinc-300 transition-colors">Contact</a>
-                        <a href="#" className="hover:text-zinc-300 transition-colors">GitHub</a>
-                    </div>
-                    <div className="text-sm text-zinc-600">
-                        &copy; {new Date().getFullYear()} SecSky.
-                    </div>
-                </div>
-            </footer>
         </div>
     );
 }

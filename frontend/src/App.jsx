@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
-import { Shield } from 'lucide-react';
+import { Shield, Github } from 'lucide-react';
 import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import Home from './features/vault/Home';
 import Login from './features/auth/Login';
@@ -7,9 +7,10 @@ import Register from './features/auth/Register';
 import Dashboard from './features/vault/Dashboard';
 import Settings from './features/security/Settings';
 import CustomCursor from './components/CustomCursor';
+import AboutModal from './components/AboutModal';
 import { Toaster } from 'react-hot-toast';
 
-import React from 'react';
+import React, { useState } from 'react';
 
 class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -55,16 +56,21 @@ function PrivateRoute({ children }) {
 
 function MainLayout() {
   const { user, logout } = useAuth();
+  const [showAbout, setShowAbout] = useState(false);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-indigo-500/30 flex flex-col">
       <CustomCursor />
-      <nav className="flex items-center justify-between px-8 py-6 max-w-7xl mx-auto border-b border-zinc-900/50">
+      <nav className="flex items-center justify-between w-full px-8 py-6 max-w-7xl mx-auto border-b border-zinc-900/50">
         <Link to="/" className="flex items-center space-x-2">
           <Shield className="w-8 h-8 text-indigo-400" />
           <span className="text-xl font-medium tracking-tight">SecSky</span>
         </Link>
         <div className="space-x-6 text-sm flex items-center">
+          <button onClick={() => setShowAbout(true)} className="text-zinc-400 hover:text-white transition-colors font-medium">About</button>
+          <a href="https://github.com/ramx03-sudo" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-indigo-400 transition-colors" title="GitHub">
+            <Github className="w-5 h-5" />
+          </a>
           {user ? (
             <>
               <Link to="/dashboard" className="text-zinc-300 hover:text-white transition-colors">Dashboard</Link>
@@ -92,7 +98,16 @@ function MainLayout() {
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         </Routes>
       </main>
-    </div>
+
+      {/* Global Footer */}
+      <footer className="mt-auto py-8 text-center border-t border-zinc-900/50">
+        <p className="text-zinc-500 text-sm">
+          &copy; {new Date().getFullYear()} SecSky. Engineered by <span className="text-indigo-400/80 font-medium">Ram Mamillapalli</span>.
+        </p>
+      </footer>
+
+      <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
+    </div >
   );
 }
 
