@@ -28,7 +28,7 @@ async def register(user: UserCreate, response: Response, db=Depends(get_db)):
             httponly=True,
             secure=True,  # Set to True for added security, requires HTTPS in prod
             samesite="none", # Must be none for cross-origin (Vercel -> Render) requests
-            max_age=3600 # 1 hour
+            max_age=60 * 60 * 24 * 30  # 30 days
         )
         
         return UserResponse(id=user_dict["_id"], email=user_dict["email"])
@@ -56,7 +56,7 @@ async def login(user: UserLogin, response: Response, db=Depends(get_db)):
         httponly=True,
         secure=True, # Set to True in production with HTTPS
         samesite="none", # Must be none for cross-origin requests
-        max_age=3600
+        max_age=60 * 60 * 24 * 30  # 30 days
     )
     return {
         "message": "Logged in successfully",
@@ -92,7 +92,12 @@ async def read_users_me(request: Request, db=Depends(get_db)):
     if user is None:
         raise HTTPException(status_code=404, detail="User not found")
         
-    return UserResponse(id=user["_id"], email=user["email"])
+    return UserResponse(
+        id=user["_id"],
+        email=user["email"],
+        salt=user.get("salt"),
+        vault_metadata=user.get("vault_metadata")
+    )
 
 from routers.files import get_current_user
 

@@ -8,7 +8,9 @@ import Dashboard from './features/vault/Dashboard';
 import Settings from './features/security/Settings';
 import CustomCursor from './components/CustomCursor';
 import AboutModal from './components/AboutModal';
+import MasterPasswordModal from './components/MasterPasswordModal';
 import { Toaster } from 'react-hot-toast';
+import { useVaultInactivity } from './hooks/useVaultInactivity';
 
 import React, { useState } from 'react';
 
@@ -41,22 +43,17 @@ class ErrorBoundary extends React.Component {
 }
 
 function PrivateRoute({ children }) {
-  const { user, loading, masterKey } = useAuth();
+  const { user, loading } = useAuth();
   if (loading) return <div className="text-center p-12 text-zinc-500">Loading...</div>;
   if (!user) return <Navigate to="/login" />;
-  if (!masterKey) {
-    return <div className="flex flex-col items-center mt-20 p-4">
-      <h2 className="text-2xl text-white mb-4">Vault Locked</h2>
-      <p className="text-zinc-400 mb-6 text-center max-w-sm">Your session is active but your master key was lost due to page refresh. Please log in again to unlock your vault.</p>
-      <Link to="/login" className="bg-indigo-500 text-white px-6 py-2 rounded-lg">Re-authenticate</Link>
-    </div>;
-  }
   return children;
 }
 
 function MainLayout() {
   const { user, logout } = useAuth();
   const [showAbout, setShowAbout] = useState(false);
+
+  useVaultInactivity();
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-indigo-500/30 flex flex-col">
@@ -107,6 +104,7 @@ function MainLayout() {
       </footer>
 
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
+      <MasterPasswordModal />
     </div >
   );
 }

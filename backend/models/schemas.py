@@ -15,6 +15,8 @@ class UserLogin(BaseModel):
 class UserResponse(BaseModel):
     id: str
     email: str
+    salt: Optional[str] = None
+    vault_metadata: Optional[str] = None
 
 class Token(BaseModel):
     access_token: str
