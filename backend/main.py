@@ -9,7 +9,11 @@ app = FastAPI(title="SecSky API", version="1.0.0")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:5174"],
+    allow_origins=[
+        "https://sec-sky.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000"
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -21,7 +25,7 @@ async def add_security_headers(request, call_next):
     response.headers["Strict-Transport-Security"] = "max-age=31536000; includeSubDomains"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
-    response.headers["Content-Security-Policy"] = "default-src 'self'; connect-src 'self' http://localhost:5173 http://localhost:5174;"
+    response.headers["Content-Security-Policy"] = "default-src 'self'; connect-src 'self' https://sec-sky.vercel.app http://localhost:5173 http://localhost:3000;"
     return response
 
 app.include_router(auth.router)
