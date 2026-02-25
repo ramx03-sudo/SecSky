@@ -27,7 +27,7 @@ async def register(user: UserCreate, response: Response, db=Depends(get_db)):
             value=f"Bearer {access_token}",
             httponly=True,
             secure=True,  # Set to True for added security, requires HTTPS in prod
-            samesite="strict",
+            samesite="none", # Must be none for cross-origin (Vercel -> Render) requests
             max_age=3600 # 1 hour
         )
         
@@ -55,7 +55,7 @@ async def login(user: UserLogin, response: Response, db=Depends(get_db)):
         value=f"Bearer {access_token}",
         httponly=True,
         secure=True, # Set to True in production with HTTPS
-        samesite="strict",
+        samesite="none", # Must be none for cross-origin requests
         max_age=3600
     )
     return {
@@ -67,7 +67,7 @@ async def login(user: UserLogin, response: Response, db=Depends(get_db)):
 
 @router.post("/logout")
 async def logout(response: Response):
-    response.delete_cookie("access_token")
+    response.delete_cookie("access_token", httponly=True, secure=True, samesite="none")
     return {"message": "Logged out successfully"}
 
 @router.get("/me", response_model=UserResponse)
