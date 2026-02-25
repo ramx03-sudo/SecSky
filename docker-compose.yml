@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  # ----------------------------------------
+  # Backend - FastAPI
+  # ----------------------------------------
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      # Use MongoDB running in the container network
+      - MONGODB_URI=mongodb://mongodb:27017
+      # You MUST change the JWT secret key before production
+      - JWT_SECRET_KEY=change_this_to_a_long_random_string_in_production
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+    volumes:
+      # Persist uploaded vault files safely outside the container
+      - backend_uploads:/app/uploads
+    depends_on:
+      - mongodb
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # Frontend - Node.js serving build
+  # ----------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # ----------------------------------------
+  # Database - MongoDB
+  # ----------------------------------------
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      # Persist MongoDB data
+      - mongodb_data:/data/db
+    restart: unless-stopped
+
+volumes:
+  mongodb_data:
+  backend_uploads:
