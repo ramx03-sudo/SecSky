@@ -331,8 +331,8 @@ export default function Files() {
     const onDrop = useCallback(acceptedFiles => {
         if (acceptedFiles?.length > 0) {
             const f = acceptedFiles[0];
-            if (f.size > 100 * 1024 * 1024) {
-                toast.error("File size exceeds 100MB limit.");
+            if (f.size > 15 * 1024 * 1024) {
+                toast.error("File size exceeds 15MB limit.");
                 return;
             }
             setSelectedFile(f);
@@ -342,7 +342,7 @@ export default function Files() {
 
     const { getRootProps, getInputProps, isDragActive, open: openFileDialog } = useDropzone({
         onDrop,
-        maxSize: 100 * 1024 * 1024,
+        maxSize: 15 * 1024 * 1024,
         noClick: true,
         noKeyboard: true
     });

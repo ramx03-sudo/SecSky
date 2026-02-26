@@ -1,6 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request, Response
 from pydantic import BaseModel
-from fastapi.responses import FileResponse
 from core.db import get_db
 import uuid
 import datetime
@@ -54,17 +53,13 @@ async def upload_file(
     user=Depends(get_current_user),
     db=Depends(get_db)
 ):
-    MAX_FILE_SIZE = 100 * 1024 * 1024 # 100 MB
+    MAX_FILE_SIZE = 15 * 1024 * 1024 # 15 MB to fit in Mongo BSON limit and Render memory limit
     
     file_bytes = await file.read()
     if len(file_bytes) > MAX_FILE_SIZE:
-        raise HTTPException(status_code=413, detail="File too large. Maximum size is 100MB.")
+        raise HTTPException(status_code=413, detail="File too large. Maximum size is 15MB.")
         
     file_id = str(uuid.uuid4())
-    
-    file_path = UPLOAD_DIR / f"{file_id}.bin"
-    with open(file_path, "wb") as f:
-        f.write(file_bytes)
         
     doc = {
         "_id": file_id,
@@ -80,6 +75,7 @@ async def upload_file(
         "password_salt": password_salt,
         "password_iv": password_iv,
         "folder_id": folder_id,
+        "encrypted_blob": file_bytes,
         "created_at": datetime.datetime.utcnow()
     }
     
@@ -98,7 +94,7 @@ async def upload_file(
     await db.activity_logs.insert_one(activity_doc)
     
     return {
-        "message": "File uploaded locally",
+        "message": "File stored in MongoDB",
         "file_id": file_id,
         "id": file_id
     }
@@ -109,16 +105,14 @@ async def download_file(file_id: str, user=Depends(get_current_user), db=Depends
     if not doc:
         raise HTTPException(status_code=404, detail="File not found")
         
-    target_file_id = doc.get("file_id", doc.get("gcs_object_id", file_id))
-    file_path = UPLOAD_DIR / f"{target_file_id}.bin"
-    
-    if not file_path.exists():
-        raise HTTPException(status_code=404, detail="File content not found on server")
+    if "encrypted_blob" not in doc:
+        # Backward compatibility attempt if it was locally stored but we wiped the server
+        raise HTTPException(status_code=404, detail="File content not found in database")
         
-    return FileResponse(
-        path=file_path,
+    return Response(
+        content=doc["encrypted_blob"],
         media_type="application/octet-stream",
-        filename=doc.get("filename", "encrypted_file.bin")
+        headers={"Content-Disposition": f"attachment; filename=\"{doc.get('filename', 'encrypted_file.bin')}\""}
     )
 
 @router.get("/{file_id}")
@@ -134,12 +128,6 @@ async def delete_file(file_id: str, user=Depends(get_current_user), db=Depends(g
     doc = await db.files.find_one({"_id": file_id, "user_id": user["_id"]})
     if not doc:
         raise HTTPException(status_code=404, detail="File not found")
-        
-    target_file_id = doc.get("file_id", doc.get("gcs_object_id", file_id))
-    file_path = UPLOAD_DIR / f"{target_file_id}.bin"
-    
-    if file_path.exists():
-        file_path.unlink()
         
     await db.files.delete_one({"_id": file_id})
     
