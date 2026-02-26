@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
+from pydantic import BaseModel
 from fastapi.responses import FileResponse
 from core.db import get_db
 import uuid
@@ -48,6 +49,7 @@ async def upload_file(
     requires_file_password: bool = Form(...),
     password_salt: str = Form(None),
     password_iv: str = Form(None),
+    folder_id: str = Form(None),
     original_size: int = Form(...),
     user=Depends(get_current_user),
     db=Depends(get_db)
@@ -77,6 +79,7 @@ async def upload_file(
         "password_protected": requires_file_password,
         "password_salt": password_salt,
         "password_iv": password_iv,
+        "folder_id": folder_id,
         "created_at": datetime.datetime.utcnow()
     }
     
@@ -152,3 +155,30 @@ async def delete_file(file_id: str, user=Depends(get_current_user), db=Depends(g
     await db.activity_logs.insert_one(activity_doc)
     
     return {"message": "File deleted"}
+
+class FileMove(BaseModel):
+    folder_id: str | None = None
+
+@router.put("/{file_id}/move")
+async def move_file(file_id: str, data: FileMove, user=Depends(get_current_user), db=Depends(get_db)):
+    doc = await db.files.find_one({"_id": file_id, "user_id": user["_id"]})
+    if not doc:
+        raise HTTPException(status_code=404, detail="File not found")
+
+    await db.files.update_one(
+        {"_id": file_id},
+        {"$set": {"folder_id": data.folder_id}}
+    )
+    
+    # Log activity
+    activity_doc = {
+        "_id": str(uuid.uuid4()),
+        "user_id": user["_id"],
+        "type": "MOVE",
+        "file_id": file_id,
+        "filename": doc.get("filename", "encrypted_file.bin"),
+        "timestamp": datetime.datetime.utcnow()
+    }
+    await db.activity_logs.insert_one(activity_doc)
+    
+    return {"message": "File moved"}

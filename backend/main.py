@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import auth, files, activity
+from routers import auth, files, activity, folders
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -31,6 +31,7 @@ async def add_security_headers(request, call_next):
 app.include_router(auth.router)
 app.include_router(files.router)
 app.include_router(activity.router)
+app.include_router(folders.router)
 
 @app.get("/health")
 async def health_check():

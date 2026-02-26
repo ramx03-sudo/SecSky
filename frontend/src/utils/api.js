@@ -43,10 +43,18 @@ export const getCurrentUser = () => fetchApi('/auth/me', { method: 'GET' });
 export const changeLoginPassword = (data) => fetchApi('/auth/login-password', { method: 'PUT', body: JSON.stringify(data) });
 export const changeMasterPassword = (data) => fetchApi('/auth/master-password', { method: 'PUT', body: JSON.stringify(data) });
 
-// File and Activity methods
+// File, Folder and Activity methods
 export const getFiles = () => fetchApi('/files/', { method: 'GET' });
 export const getFileMetadata = (id) => fetchApi(`/files/${id}`, { method: 'GET' });
 export const deleteFile = (id) => fetchApi(`/files/${id}`, { method: 'DELETE' });
+export const moveFile = (id, folder_id) => fetchApi(`/files/${id}/move`, { method: 'PUT', body: JSON.stringify({ folder_id }) });
+
+export const getFolders = () => fetchApi('/folders/', { method: 'GET' });
+export const createFolder = (data) => fetchApi('/folders/', { method: 'POST', body: JSON.stringify(data) });
+export const deleteFolder = (id) => fetchApi(`/folders/${id}`, { method: 'DELETE' });
+export const renameFolder = (id, data) => fetchApi(`/folders/${id}/rename`, { method: 'PUT', body: JSON.stringify(data) });
+export const moveFolder = (id, data) => fetchApi(`/folders/${id}/move`, { method: 'PUT', body: JSON.stringify(data) });
+
 export const getRecentActivity = () => fetchApi('/activity/recent', { method: 'GET' });
 
 // Upload is special because it uses FormData

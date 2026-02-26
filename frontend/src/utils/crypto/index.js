@@ -215,3 +215,17 @@ export async function decryptString(encryptedBase64, ivBase64, key) {
     const dec = new TextDecoder();
     return dec.decode(decBuffer);
 }
+
+export async function encryptString(plaintext, key) {
+    const enc = new TextEncoder();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const encryptedBuffer = await crypto.subtle.encrypt(
+        { name: "AES-GCM", iv },
+        key,
+        enc.encode(plaintext)
+    );
+    return {
+        encryptedBase64: btoa(String.fromCharCode(...new Uint8Array(encryptedBuffer))),
+        ivBase64: btoa(String.fromCharCode(...iv))
+    };
+}

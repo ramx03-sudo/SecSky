@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
-import { getFiles, deleteFile, uploadFile, fetchFileBlob } from '../../utils/api';
-import { encryptFileFlow, decryptFileFlow, decryptString } from '../../utils/crypto';
-import { UploadCloud, File, Trash2, Download, Lock, X, Loader2, CheckCircle2, Shield, HardDrive, Calendar, Eye } from 'lucide-react';
+import { getFiles, deleteFile, uploadFile, fetchFileBlob, getFolders, createFolder, deleteFolder, renameFolder, moveFile, moveFolder } from '../../utils/api';
+import { encryptFileFlow, decryptFileFlow, decryptString, encryptString } from '../../utils/crypto';
+import { UploadCloud, File, Trash2, Download, Lock, X, Loader2, CheckCircle2, Shield, HardDrive, Calendar, Eye, Folder, FolderPlus, ChevronRight, Edit3, ArrowLeft } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
@@ -31,8 +31,11 @@ const getMimeType = (filename) => {
 
 export default function Files() {
     const { masterKey } = useAuth();
-    const [files, setFiles] = useState([]);
+    const [allFiles, setAllFiles] = useState([]);
+    const [allFolders, setAllFolders] = useState([]);
     const [loadingList, setLoadingList] = useState(true);
+
+    const [currentFolder, setCurrentFolder] = useState(null); // null = Root
 
     // Upload Modal State
     const [showUploadModal, setShowUploadModal] = useState(false);
@@ -40,6 +43,12 @@ export default function Files() {
     const [useFilePassword, setUseFilePassword] = useState(false);
     const [filePassword, setFilePassword] = useState('');
     const [uploadStatus, setUploadStatus] = useState('');
+
+    // Folder Modal State
+    const [showFolderModal, setShowFolderModal] = useState(false);
+    const [folderName, setFolderName] = useState('');
+    const [folderAction, setFolderAction] = useState('create'); // 'create' or folder id to 'rename'
+    const [isSubmittingFolder, setIsSubmittingFolder] = useState(false);
 
     // Download & Preview State
     const [downloadingId, setDownloadingId] = useState(null);
@@ -53,15 +62,16 @@ export default function Files() {
     const [previewUrl, setPreviewUrl] = useState(null);
 
     useEffect(() => {
-        fetchFiles();
+        fetchVaultData();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
-    const fetchFiles = async () => {
+    const fetchVaultData = async () => {
         try {
             setLoadingList(true);
-            const data = await getFiles();
-            const decryptedFiles = await Promise.all(data.map(async f => {
+            const [fileData, folderData] = await Promise.all([getFiles(), getFolders()]);
+
+            const decryptedFiles = await Promise.all(fileData.map(async f => {
                 try {
                     const name = await decryptString(f.filename, f.filename_iv, masterKey);
                     return { ...f, decryptedName: name };
@@ -70,28 +80,104 @@ export default function Files() {
                 }
             }));
 
+            const decryptedFolders = await Promise.all(folderData.map(async f => {
+                try {
+                    const name = await decryptString(f.name_encrypted, f.name_iv, masterKey);
+                    return { ...f, decryptedName: name };
+                } catch {
+                    return { ...f, decryptedName: 'Encrypted Folder' };
+                }
+            }));
+
             // Sort by created_at descending
             decryptedFiles.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-            setFiles(decryptedFiles);
+            decryptedFolders.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+
+            setAllFiles(decryptedFiles);
+            setAllFolders(decryptedFolders);
         } catch {
-            toast.error("Failed to load vault");
+            toast.error("Failed to load vault data");
         } finally {
             setLoadingList(false);
         }
     };
 
+    // Derived standard view properties
+    const currentFiles = allFiles.filter(f => (f.folder_id || null) === currentFolder);
+    const currentFoldersList = allFolders.filter(f => (f.parent_id || null) === currentFolder);
+
+    const getBreadcrumbs = () => {
+        const crumbs = [];
+        let curr = currentFolder;
+        while (curr) {
+            const f = allFolders.find(x => x.id === curr);
+            if (f) {
+                crumbs.unshift(f);
+                curr = f.parent_id || null;
+            } else {
+                break;
+            }
+        }
+        return crumbs;
+    };
+
+    const breadcrumbs = getBreadcrumbs();
+
+    // Folder Actions
+    const handleFolderSubmit = async (e) => {
+        e.preventDefault();
+        if (!folderName.trim()) return;
+        if (!masterKey) return;
+
+        setIsSubmittingFolder(true);
+        try {
+            const { encryptedBase64, ivBase64 } = await encryptString(folderName.trim(), masterKey);
+
+            if (folderAction === 'create') {
+                await createFolder({
+                    name_encrypted: encryptedBase64,
+                    name_iv: ivBase64,
+                    parent_id: currentFolder
+                });
+                toast.success('Folder created');
+            } else {
+                await renameFolder(folderAction, {
+                    name_encrypted: encryptedBase64,
+                    name_iv: ivBase64
+                });
+                toast.success('Folder renamed');
+            }
+            setShowFolderModal(false);
+            fetchVaultData();
+        } catch (e) {
+            toast.error('Failed to process folder: ' + e.message);
+        } finally {
+            setIsSubmittingFolder(false);
+        }
+    };
+
+    const handleDeleteFolder = async (id, e) => {
+        e.stopPropagation(); // prevent navigation
+        if (!window.confirm("Are you sure? Only empty folders can be deleted.")) return;
+        try {
+            await deleteFolder(id);
+            toast.success("Folder deleted");
+            setAllFolders(allFolders.filter(f => f.id !== id));
+        } catch (e) {
+            toast.error("Error: " + (e.message || "Cannot delete non-empty folder"));
+        }
+    };
+
+    // File Actions
     const handleDelete = async (id) => {
         if (!window.confirm('Are you sure you want to securely delete this file?')) return;
-
-        // Optimistic UI update
-        const previousFiles = [...files];
-        setFiles(files.filter(f => f.id !== id));
-
+        const previousFiles = [...allFiles];
+        setAllFiles(allFiles.filter(f => f.id !== id));
         try {
             await deleteFile(id);
             toast.success("File securely deleted");
         } catch {
-            setFiles(previousFiles);
+            setAllFiles(previousFiles);
             toast.error('Failed to delete file');
         }
     };
@@ -225,7 +311,7 @@ export default function Files() {
     const { getRootProps, getInputProps, isDragActive, open: openFileDialog } = useDropzone({
         onDrop,
         maxSize: 100 * 1024 * 1024,
-        noClick: true, // Only open dialog when explicit button clicked, except for the large drop area
+        noClick: true,
         noKeyboard: true
     });
 
@@ -250,11 +336,9 @@ export default function Files() {
 
         try {
             setUploadStatus('encrypting');
-
             const payload = await encryptFileFlow(selectedFile, masterKey, useFilePassword ? filePassword : null);
 
             setUploadStatus('uploading');
-
             const formData = new FormData();
             formData.append('file', payload.encryptedFileBlob, "blob");
             formData.append('encrypted_file_key', payload.encryptedFileKey);
@@ -263,6 +347,8 @@ export default function Files() {
             formData.append('encrypted_filename', payload.encryptedFilename);
             formData.append('filename_iv', payload.filenameIv);
             formData.append('requires_file_password', payload.requiresFilePassword);
+            if (currentFolder) formData.append('folder_id', currentFolder);
+
             if (payload.requiresFilePassword) {
                 formData.append('password_salt', payload.filePasswordSalt);
                 formData.append('password_iv', payload.filePasswordIv);
@@ -273,7 +359,7 @@ export default function Files() {
 
             setUploadStatus('done');
             toast.success("File encrypted and stored!");
-            fetchFiles();
+            fetchVaultData();
             setTimeout(() => resetUploadModal(), 1500);
 
         } catch (e) {
@@ -291,7 +377,7 @@ export default function Files() {
         return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
     };
 
-    const totalSize = files.reduce((acc, f) => acc + (f.file_size || 0), 0);
+    const totalSize = allFiles.reduce((acc, f) => acc + (f.file_size || 0), 0);
 
     return (
         <div className="max-w-7xl mx-auto px-8 py-10 min-h-[85vh] relative" {...getRootProps()}>
@@ -313,59 +399,111 @@ export default function Files() {
                 )}
             </AnimatePresence>
 
-            <div className="flex justify-between items-center mb-8">
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h1 className="text-3xl font-semibold text-white tracking-tight">Your Vault</h1>
-                    <p className="text-zinc-500 text-sm mt-1">End-to-End Encrypted File Storage.</p>
+                    <h1 className="text-3xl font-semibold text-white tracking-tight flex items-center gap-2">
+                        {currentFolder && (
+                            <button onClick={() => setCurrentFolder(breadcrumbs[breadcrumbs.length - 2]?.id || null)} className="hover:bg-zinc-800 p-1.5 rounded-lg transition-colors mr-2 text-zinc-400">
+                                <ArrowLeft className="w-6 h-6" />
+                            </button>
+                        )}
+                        Workspace
+                    </h1>
+                    <div className="flex items-center text-sm mt-3 text-zinc-500">
+                        <button onClick={() => setCurrentFolder(null)} className="hover:text-indigo-400 transition-colors">Vault Root</button>
+                        {breadcrumbs.map((crumb, idx) => (
+                            <React.Fragment key={crumb.id}>
+                                <ChevronRight className="w-4 h-4 mx-1 opacity-50" />
+                                <button onClick={() => setCurrentFolder(crumb.id)} className={`hover:text-indigo-400 transition-colors ${idx === breadcrumbs.length - 1 ? 'text-zinc-300 font-medium' : ''}`}>
+                                    {crumb.decryptedName}
+                                </button>
+                            </React.Fragment>
+                        ))}
+                    </div>
                 </div>
-                <button
-                    onClick={openFileDialog}
-                    disabled={!masterKey}
-                    className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-2 relative z-10 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                    <UploadCloud className="w-5 h-5" />
-                    <span>Upload File</span>
-                </button>
+                <div className="flex gap-3 relative z-10">
+                    <button
+                        onClick={() => { setFolderAction('create'); setFolderName(''); setShowFolderModal(true); }}
+                        disabled={!masterKey}
+                        className="bg-zinc-800 hover:bg-zinc-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg flex items-center space-x-2 disabled:opacity-50"
+                    >
+                        <FolderPlus className="w-5 h-5 text-indigo-400" />
+                        <span>New Folder</span>
+                    </button>
+                    <button
+                        onClick={openFileDialog}
+                        disabled={!masterKey}
+                        className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-2 disabled:opacity-50"
+                    >
+                        <UploadCloud className="w-5 h-5" />
+                        <span>Upload File</span>
+                    </button>
+                </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 flex items-center gap-4 hover:border-indigo-500/20 transition-colors">
-                    <div className="p-3 bg-indigo-500/10 rounded-xl"><File className="text-indigo-400 w-6 h-6" /></div>
-                    <div><p className="text-zinc-500 text-sm">Total Files</p><p className="text-2xl font-semibold text-white">{files.length}</p></div>
-                </div>
-                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 flex items-center gap-4 hover:border-emerald-500/20 transition-colors">
-                    <div className="p-3 bg-emerald-500/10 rounded-xl"><HardDrive className="text-emerald-400 w-6 h-6" /></div>
-                    <div><p className="text-zinc-500 text-sm">Encrypted Data</p><p className="text-2xl font-semibold text-white">{formatBytes(totalSize)}</p></div>
-                </div>
-                <div className="bg-zinc-900/40 border border-zinc-800/80 rounded-2xl p-6 flex items-center gap-4 hover:border-amber-500/20 transition-colors">
-                    <div className="p-3 bg-amber-500/10 rounded-xl"><Shield className="text-amber-400 w-6 h-6" /></div>
-                    <div><p className="text-zinc-500 text-sm">Encryption Type</p><p className="text-2xl font-semibold text-white leading-tight mt-1">AES-256<br /><span className="text-xs text-zinc-500 font-normal">GCM Protocol</span></p></div>
-                </div>
-            </div>
-
-            <div className="bg-zinc-900/10 rounded-3xl min-h-[40vh]">
+            <div className="bg-zinc-900/10 rounded-3xl min-h-[50vh]">
                 {loadingList ? (
                     <div className="flex justify-center items-center h-48">
                         <Loader2 className="w-8 h-8 text-indigo-500 animate-spin" />
                     </div>
-                ) : files.length === 0 ? (
-                    <div onClick={openFileDialog} className="flex flex-col items-center justify-center h-64 text-zinc-500 cursor-pointer border-2 border-dashed border-zinc-800/50 hover:border-indigo-500/30 hover:bg-indigo-500/5 rounded-3xl transition-all group">
+                ) : (currentFiles.length === 0 && currentFoldersList.length === 0) ? (
+                    <div onClick={openFileDialog} className="flex flex-col items-center justify-center h-72 text-zinc-500 cursor-pointer border-2 border-dashed border-zinc-800/50 hover:border-indigo-500/30 hover:bg-indigo-500/5 rounded-3xl transition-all group">
                         <div className="w-20 h-20 bg-zinc-800/30 group-hover:bg-indigo-500/10 rounded-full flex items-center justify-center mb-4 transition-colors">
                             <UploadCloud className="w-10 h-10 group-hover:text-indigo-400 transition-colors" />
                         </div>
-                        <p className="text-lg text-zinc-300 font-medium">Drag and drop to secure files</p>
-                        <p className="text-sm mt-1">or click to browse from your device</p>
+                        <p className="text-lg text-zinc-300 font-medium">This folder is empty</p>
+                        <p className="text-sm mt-1">Drag and drop to upload securely</p>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <AnimatePresence>
-                            {files.map(f => (
+                            {/* Render Folders First */}
+                            {currentFoldersList.map(f => (
                                 <motion.div
                                     layout
                                     initial={{ opacity: 0, scale: 0.95 }}
                                     animate={{ opacity: 1, scale: 1 }}
                                     exit={{ opacity: 0, scale: 0.9 }}
-                                    key={f.id}
+                                    key={`folder-${f.id}`}
+                                    className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group overflow-hidden relative shadow-lg cursor-pointer"
+                                    onClick={() => setCurrentFolder(f.id)}
+                                >
+                                    <div className="flex items-start justify-between mb-2">
+                                        <div className="flex items-center space-x-3 truncate pr-4">
+                                            <div className="p-3 bg-zinc-800 rounded-xl flex-shrink-0 group-hover:bg-indigo-500/20 transition-colors">
+                                                <Folder className="w-5 h-5 text-indigo-400" />
+                                            </div>
+                                            <div className="truncate">
+                                                <p className="text-sm font-medium text-zinc-200 truncate" title={f.decryptedName}>{f.decryptedName}</p>
+                                                <p className="text-xs text-zinc-500 mt-0.5">Folder</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex justify-end gap-2 relative z-10 pt-4 mt-2 border-t border-zinc-800/50 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setFolderAction(f.id); setFolderName(f.decryptedName); setShowFolderModal(true); }}
+                                            className="bg-zinc-800 hover:bg-indigo-500 text-zinc-400 hover:text-white transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
+                                        >
+                                            <Edit3 className="w-3.5 h-3.5 mr-1" /> Rename
+                                        </button>
+                                        <button
+                                            onClick={(e) => handleDeleteFolder(f.id, e)}
+                                            className="bg-zinc-800 hover:bg-red-500 text-zinc-400 hover:text-white transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                                        </button>
+                                    </div>
+                                </motion.div>
+                            ))}
+
+                            {/* Render Files */}
+                            {currentFiles.map(f => (
+                                <motion.div
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.95 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    key={`file-${f.id}`}
                                     className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/30 transition-all group overflow-hidden relative shadow-lg shadow-black/20"
                                 >
                                     <div className="flex items-start justify-between mb-4">
@@ -375,14 +513,14 @@ export default function Files() {
                                             </div>
                                             <div className="truncate">
                                                 <p className="text-sm font-medium text-zinc-200 truncate" title={f.decryptedName}>{f.decryptedName}</p>
-                                                <p className="text-xs text-zinc-500">{formatBytes(f.file_size)}</p>
+                                                <p className="text-xs text-zinc-500 mt-0.5">{formatBytes(f.file_size)}</p>
                                             </div>
                                         </div>
                                     </div>
 
                                     <div className="flex items-center text-xs text-zinc-600 mb-4 px-1">
                                         <Calendar className="w-3.5 h-3.5 mr-1" />
-                                        {f.created_at ? new Date(f.created_at).toLocaleDateString() : 'Unknown Date'}
+                                        {f.created_at ? new Date(f.created_at).toLocaleDateString() : 'Unknown'}
                                     </div>
 
                                     {promptPasswordForId === f.id ? (
@@ -404,28 +542,20 @@ export default function Files() {
                                             </div>
                                         </motion.div>
                                     ) : (
-                                        <div className="flex gap-2 relative z-0">
+                                        <div className="flex gap-2 relative z-0 mt-2">
                                             <button
                                                 onClick={() => handleViewClick(f)}
                                                 disabled={viewingId === f.id}
-                                                className="flex-1 bg-zinc-800 hover:bg-emerald-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-sm transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                                                className="flex-1 bg-zinc-800 hover:bg-emerald-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-xs transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
                                             >
-                                                {viewingId === f.id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <><Eye className="w-4 h-4" /><span>View</span></>
-                                                )}
+                                                {viewingId === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Eye className="w-3.5 h-3.5" /><span>View</span></>}
                                             </button>
                                             <button
                                                 onClick={() => handleDownloadClick(f)}
                                                 disabled={downloadingId === f.id}
-                                                className="flex-1 bg-zinc-800 hover:bg-indigo-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-sm transition-all flex items-center justify-center space-x-1.5 disabled:opacity-50"
+                                                className="flex-1 bg-zinc-800 hover:bg-indigo-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-xs transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
                                             >
-                                                {downloadingId === f.id ? (
-                                                    <Loader2 className="w-4 h-4 animate-spin" />
-                                                ) : (
-                                                    <><Download className="w-4 h-4" /><span>Save</span></>
-                                                )}
+                                                {downloadingId === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Download className="w-3.5 h-3.5" /><span>Save</span></>}
                                             </button>
                                             <button
                                                 onClick={() => handleDelete(f.id)}
@@ -443,7 +573,40 @@ export default function Files() {
                 )}
             </div>
 
-            {/* Preview Modal */}
+            {/* CREATE/RENAME FOLDER MODAL */}
+            <AnimatePresence>
+                {showFolderModal && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isSubmittingFolder && setShowFolderModal(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative z-10 p-6">
+                            <h3 className="text-xl font-medium text-white mb-4 flex items-center gap-2">
+                                <FolderPlus className="w-5 h-5 text-indigo-400" />
+                                {folderAction === 'create' ? 'Create Folder' : 'Rename Folder'}
+                            </h3>
+                            <form onSubmit={handleFolderSubmit}>
+                                <input
+                                    type="text"
+                                    required
+                                    autoFocus
+                                    placeholder="Folder Name"
+                                    className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-white mb-4 focus:ring-2 focus:ring-indigo-500/50 outline-none"
+                                    value={folderName}
+                                    onChange={(e) => setFolderName(e.target.value)}
+                                    disabled={isSubmittingFolder}
+                                />
+                                <div className="flex gap-3">
+                                    <button onClick={() => setShowFolderModal(false)} type="button" className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 rounded-xl transition-colors font-medium">Cancel</button>
+                                    <button disabled={isSubmittingFolder || !folderName.trim()} type="submit" className="flex-1 bg-indigo-500 hover:bg-indigo-400 text-white py-2.5 rounded-xl transition-colors font-medium disabled:opacity-50 flex justify-center">
+                                        {isSubmittingFolder ? <Loader2 className="w-5 h-5 animate-spin" /> : (folderAction === 'create' ? 'Create' : 'Save')}
+                                    </button>
+                                </div>
+                            </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* PREVIEW MODAL */}
             <AnimatePresence>
                 {previewUrl && previewFile && (
                     <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
@@ -492,6 +655,7 @@ export default function Files() {
                 )}
             </AnimatePresence>
 
+            {/* UPLOAD MODAL */}
             <AnimatePresence>
                 {showUploadModal && (
                     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -569,7 +733,7 @@ export default function Files() {
                                                 onClick={handleUploadSubmit}
                                                 className="w-full bg-indigo-500 hover:bg-indigo-400 text-white font-medium py-3.5 rounded-xl transition-all shadow-[0_0_20px_rgba(99,102,241,0.2)] hover:shadow-[0_0_25px_rgba(99,102,241,0.4)]"
                                             >
-                                                Start Secure Transfer
+                                                Start Secure Transfer {currentFolder && 'to Folder'}
                                             </button>
                                         ) : (
                                             <div className="w-full bg-zinc-900 border border-zinc-800 py-3.5 rounded-xl flex flex-col items-center justify-center space-y-2">
@@ -582,7 +746,6 @@ export default function Files() {
                                                         {uploadStatus === 'done' && 'Secured in Vault!'}
                                                     </span>
                                                 </div>
-                                                {/* Progress stub */}
                                                 <div className="w-2/3 h-1 bg-zinc-800 rounded-full overflow-hidden">
                                                     <motion.div
                                                         className={`h-full ${uploadStatus === 'done' ? 'bg-emerald-400' : 'bg-indigo-500'}`}
