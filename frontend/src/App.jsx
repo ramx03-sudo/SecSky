@@ -99,19 +99,25 @@ function MainLayout() {
 
       {/* Global Footer */}
       <footer className="mt-auto border-t border-[rgba(255,255,255,0.06)] bg-[#05060F]">
-        <div className="max-w-[1200px] mx-auto px-[60px] py-[40px] flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="text-[#E6E9F2] font-medium">
-            SecSky
+        <div className="max-w-[1200px] mx-auto px-[60px] py-[60px] flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+          <div>
+            <div className="text-[#E6E9F2] font-semibold text-[20px] mb-2">
+              SecSky
+            </div>
+            <div className="text-[#A0A6C3] text-[14px]">
+              Designed & Engineered by <span className="text-[#E6E9F2]">Ram Mamillapalli</span>
+            </div>
           </div>
-          <div className="flex items-center gap-6 text-sm text-[#A0A6C3]">
+          <div className="flex flex-wrap items-center gap-6 text-[14px] text-[#A0A6C3]">
             <a href="#" className="hover:text-[#E6E9F2] transition-colors">Docs</a>
             <a href="#" className="hover:text-[#E6E9F2] transition-colors">Privacy</a>
+            <a href="#" className="hover:text-[#E6E9F2] transition-colors w-max">Security Whitepaper</a>
             <a href="#" className="hover:text-[#E6E9F2] transition-colors">Terms</a>
           </div>
         </div>
         <div className="border-t border-[rgba(255,255,255,0.03)] flex justify-center py-[24px]">
-          <p className="text-[#A0A6C3] text-sm">
-            &copy; 2026 SecSky. Engineered by Ram Mamillapalli.
+          <p className="text-[#A0A6C3] text-[13px]">
+            &copy; {new Date().getFullYear()} SecSky. All rights reserved.
           </p>
         </div>
       </footer>
