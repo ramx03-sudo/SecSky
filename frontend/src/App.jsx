@@ -43,9 +43,10 @@ class ErrorBoundary extends React.Component {
 }
 
 function PrivateRoute({ children }) {
-  const { user, loading } = useAuth();
+  const { user, loading, isVaultUnlocked } = useAuth();
   if (loading) return <div className="text-center p-12 text-zinc-500">Loading...</div>;
   if (!user) return <Navigate to="/login" />;
+  if (!isVaultUnlocked) return <MasterPasswordModal />;
   return children;
 }
 
@@ -104,7 +105,6 @@ function MainLayout() {
       </footer>
 
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
-      <MasterPasswordModal />
     </div >
   );
 }

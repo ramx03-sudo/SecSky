@@ -7,10 +7,7 @@ export function useVaultInactivity(timeout = 10 * 60 * 1000) {
         const handleActivity = () => {
             clearTimeout(timeoutId);
             timeoutId = setTimeout(() => {
-                if (localStorage.getItem('vault_unlocked') === 'true') {
-                    localStorage.removeItem('vault_unlocked');
-                    window.dispatchEvent(new Event('vaultLocked'));
-                }
+                window.dispatchEvent(new Event('vaultLocked'));
             }, timeout);
         };
 

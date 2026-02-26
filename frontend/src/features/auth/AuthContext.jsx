@@ -18,7 +18,6 @@ export const AuthProvider = ({ children }) => {
             })
             .catch(() => {
                 setUser(null);
-                localStorage.removeItem('vault_unlocked');
             })
             .finally(() => setLoading(false));
 
@@ -31,16 +30,32 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const res = await loginUser({ email, password });
-        setUser({ email, id: res.user_id });
+        setUser({ email, id: res.user_id, vault_metadata: res.vault_metadata });
         setUserSalt(res.salt);
         return true;
     };
 
     const unlockVault = async (masterPassword) => {
         if (!userSalt) throw new Error("No salt found. Please re-login.");
+        if (!user || !user.vault_metadata) throw new Error("Vault metadata missing. Cannot verify master password.");
+
         const { masterKey: mKey } = await deriveMasterKey(masterPassword, userSalt);
+
+        try {
+            const meta = JSON.parse(user.vault_metadata);
+            const iv = new Uint8Array(atob(meta.iv).split('').map(c => c.charCodeAt(0)));
+            const data = new Uint8Array(atob(meta.data).split('').map(c => c.charCodeAt(0)));
+
+            await crypto.subtle.decrypt(
+                { name: "AES-GCM", iv },
+                mKey,
+                data
+            );
+        } catch (e) {
+            throw new Error("Incorrect master password");
+        }
+
         setMasterKey(mKey);
-        localStorage.setItem('vault_unlocked', 'true');
     };
 
     const register = async (email, loginPassword, masterPassword) => {
@@ -65,10 +80,9 @@ export const AuthProvider = ({ children }) => {
         });
 
         const res = await registerUser({ email, password: loginPassword, salt: saltString, vault_metadata });
-        setUser({ email, id: res.id });
+        setUser({ email, id: res.id, vault_metadata });
         setUserSalt(saltString);
         setMasterKey(mKey);
-        localStorage.setItem('vault_unlocked', 'true');
         return true;
     };
 
@@ -77,7 +91,6 @@ export const AuthProvider = ({ children }) => {
         setUser(null);
         setMasterKey(null);
         setUserSalt(null);
-        localStorage.removeItem('vault_unlocked');
     };
 
     return (
