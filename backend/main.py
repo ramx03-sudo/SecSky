@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from routers import auth, files, activity, folders
+from core.db import db
 import warnings
 
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -32,6 +33,11 @@ app.include_router(auth.router)
 app.include_router(files.router)
 app.include_router(activity.router)
 app.include_router(folders.router)
+
+@app.on_event("startup")
+async def startup_db_indexes():
+    await db.folders.create_index([("user_id", 1), ("parent_id", 1)])
+    await db.files.create_index([("user_id", 1), ("folder_id", 1)])
 
 @app.get("/health")
 async def health_check():
