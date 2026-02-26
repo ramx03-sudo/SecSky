@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { loginUser, registerUser, logoutUser, getCurrentUser } from '../../utils/api';
 import { deriveMasterKey } from '../../utils/crypto';
 
@@ -6,7 +6,8 @@ const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
     const [user, setUser] = useState(null);
-    const [masterKey, setMasterKey] = useState(null);
+    const masterKeyRef = useRef(null);
+    const [isVaultUnlocked, setIsVaultUnlocked] = useState(false);
     const [userSalt, setUserSalt] = useState(null);
     const [loading, setLoading] = useState(true);
 
@@ -22,7 +23,8 @@ export const AuthProvider = ({ children }) => {
             .finally(() => setLoading(false));
 
         const handleLock = () => {
-            setMasterKey(null);
+            masterKeyRef.current = null;
+            setIsVaultUnlocked(false);
         };
         window.addEventListener('vaultLocked', handleLock);
         return () => window.removeEventListener('vaultLocked', handleLock);
@@ -55,7 +57,8 @@ export const AuthProvider = ({ children }) => {
             throw new Error("Incorrect master password");
         }
 
-        setMasterKey(mKey);
+        masterKeyRef.current = mKey;
+        setIsVaultUnlocked(true);
     };
 
     const register = async (email, loginPassword, masterPassword) => {
@@ -82,19 +85,21 @@ export const AuthProvider = ({ children }) => {
         const res = await registerUser({ email, password: loginPassword, salt: saltString, vault_metadata });
         setUser({ email, id: res.id, vault_metadata });
         setUserSalt(saltString);
-        setMasterKey(mKey);
+        masterKeyRef.current = mKey;
+        setIsVaultUnlocked(true);
         return true;
     };
 
     const logout = async () => {
         await logoutUser();
         setUser(null);
-        setMasterKey(null);
+        masterKeyRef.current = null;
+        setIsVaultUnlocked(false);
         setUserSalt(null);
     };
 
     return (
-        <AuthContext.Provider value={{ user, masterKey, userSalt, isVaultUnlocked: !!masterKey, login, unlockVault, register, logout, loading }}>
+        <AuthContext.Provider value={{ user, masterKey: masterKeyRef.current, userSalt, isVaultUnlocked, login, unlockVault, register, logout, loading }}>
             {children}
         </AuthContext.Provider>
     );
