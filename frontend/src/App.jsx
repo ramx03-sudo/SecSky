@@ -5,6 +5,7 @@ import Home from './features/vault/Home';
 import Login from './features/auth/Login';
 import Register from './features/auth/Register';
 import Dashboard from './features/vault/Dashboard';
+import Files from './features/vault/Files';
 import Settings from './features/security/Settings';
 import CustomCursor from './components/CustomCursor';
 import AboutModal from './components/AboutModal';
@@ -71,8 +72,8 @@ function MainLayout() {
           </a>
           {user ? (
             <>
+              <Link to="/files" className="text-zinc-300 hover:text-white transition-colors">Files</Link>
               <Link to="/dashboard" className="text-zinc-300 hover:text-white transition-colors">Dashboard</Link>
-              <Link to="/dashboard" className="text-zinc-300 hover:text-white transition-colors">Upload</Link>
               <Link to="/settings" className="text-zinc-300 hover:text-white transition-colors">Settings & Security</Link>
               <button onClick={logout} className="text-zinc-500 hover:text-zinc-300 transition-colors">Logout</button>
             </>
@@ -93,6 +94,7 @@ function MainLayout() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
+          <Route path="/files" element={<PrivateRoute><Files /></PrivateRoute>} />
           <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
         </Routes>
       </main>

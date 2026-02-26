@@ -43,10 +43,11 @@ export const getCurrentUser = () => fetchApi('/auth/me', { method: 'GET' });
 export const changeLoginPassword = (data) => fetchApi('/auth/login-password', { method: 'PUT', body: JSON.stringify(data) });
 export const changeMasterPassword = (data) => fetchApi('/auth/master-password', { method: 'PUT', body: JSON.stringify(data) });
 
-// File methods
+// File and Activity methods
 export const getFiles = () => fetchApi('/files/', { method: 'GET' });
 export const getFileMetadata = (id) => fetchApi(`/files/${id}`, { method: 'GET' });
 export const deleteFile = (id) => fetchApi(`/files/${id}`, { method: 'DELETE' });
+export const getRecentActivity = () => fetchApi('/activity/recent', { method: 'GET' });
 
 // Upload is special because it uses FormData
 export async function uploadFile(formData) {

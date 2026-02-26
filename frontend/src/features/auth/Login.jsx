@@ -34,7 +34,7 @@ export default function Login() {
         try {
             await unlockVault(masterPassword);
             toast.success("Vault Unlocked!");
-            navigate('/dashboard');
+            navigate('/files');
         } catch (err) {
             toast.error(err.message || 'Failed to unlock vault');
         }

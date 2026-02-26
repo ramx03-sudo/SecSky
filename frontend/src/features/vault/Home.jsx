@@ -52,8 +52,8 @@ export default function Home() {
 
                     <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto">
                         <Magnetic className="w-full sm:w-auto">
-                            <Link to={user ? "/dashboard" : "/register"} className="block w-full sm:w-auto text-center bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-full font-medium shadow-[0_0_20px_rgba(99,102,241,0.2)] transition-colors">
-                                {user ? "Go to Dashboard" : "Create Your Vault"}
+                            <Link to={user ? "/files" : "/register"} className="block w-full sm:w-auto text-center bg-indigo-500 hover:bg-indigo-400 text-white px-8 py-4 rounded-full font-medium shadow-[0_0_20px_rgba(99,102,241,0.2)] transition-colors">
+                                {user ? "Go to Files" : "Create Your Vault"}
                             </Link>
                         </Magnetic>
                         <Magnetic className="w-full sm:w-auto">

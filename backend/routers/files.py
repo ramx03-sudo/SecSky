@@ -81,6 +81,19 @@ async def upload_file(
     }
     
     await db.files.insert_one(doc)
+    
+    # Log upload activity
+    activity_doc = {
+        "_id": str(uuid.uuid4()),
+        "user_id": user["_id"],
+        "type": "UPLOAD",
+        "file_id": file_id,
+        "filename": encrypted_filename,
+        "timestamp": datetime.datetime.utcnow(),
+        "password_added": requires_file_password
+    }
+    await db.activity_logs.insert_one(activity_doc)
+    
     return {
         "message": "File uploaded locally",
         "file_id": file_id,
@@ -126,4 +139,16 @@ async def delete_file(file_id: str, user=Depends(get_current_user), db=Depends(g
         file_path.unlink()
         
     await db.files.delete_one({"_id": file_id})
+    
+    # Log delete activity
+    activity_doc = {
+        "_id": str(uuid.uuid4()),
+        "user_id": user["_id"],
+        "type": "DELETE",
+        "file_id": file_id,
+        "filename": doc.get("filename", "encrypted_file.bin"),
+        "timestamp": datetime.datetime.utcnow()
+    }
+    await db.activity_logs.insert_one(activity_doc)
+    
     return {"message": "File deleted"}

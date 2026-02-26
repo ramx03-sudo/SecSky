@@ -40,7 +40,7 @@ export default function Register() {
         try {
             await register(email, loginPassword, masterPassword);
             toast.success("Vault created successfully");
-            navigate('/dashboard');
+            navigate('/files');
         } catch (err) {
             toast.error(err.message || 'Failed to register');
         }
