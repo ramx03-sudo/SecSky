@@ -60,29 +60,27 @@ function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-indigo-500/30">
       <CustomCursor />
-      <nav className="flex items-center justify-between w-full px-8 py-6 max-w-7xl mx-auto">
+      <nav className="h-[80px] flex items-center justify-between w-full px-[60px] max-w-[1200px] mx-auto">
         <Link to="/" className="flex items-center space-x-2">
-          <Shield className="w-8 h-8 text-indigo-400" />
-          <span className="text-xl font-medium tracking-tight">SecSky</span>
+          <span className="text-xl font-medium tracking-tight text-[#E6E9F2]">SecSky</span>
         </Link>
-        <div className="space-x-6 text-sm flex items-center">
-          <button onClick={() => setShowAbout(true)} className="text-zinc-400 hover:text-white transition-colors font-medium">About</button>
-          <a href="https://github.com/ramx03-sudo" target="_blank" rel="noopener noreferrer" className="text-zinc-500 hover:text-indigo-400 transition-colors" title="GitHub">
-            <Github className="w-5 h-5" />
-          </a>
-          {user ? (
+        <div className="flex items-center gap-6 text-[15px] font-medium text-[#A0A6C3]">
+          {!user ? (
             <>
-              <Link to="/files" className="text-zinc-300 hover:text-white transition-colors">Files</Link>
-              <Link to="/dashboard" className="text-zinc-300 hover:text-white transition-colors">Dashboard</Link>
-              <Link to="/settings" className="text-zinc-300 hover:text-white transition-colors">Settings & Security</Link>
-              <button onClick={logout} className="text-zinc-500 hover:text-zinc-300 transition-colors">Logout</button>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Product</button>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Security</button>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Docs</button>
+              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2"></div>
+              <Link to="/login" className="hover:text-[#E6E9F2] transition-colors">Log In</Link>
+              <Link to="/register" className="btn-primary py-2.5 px-6">Sign Up</Link>
             </>
           ) : (
             <>
-              <Link to="/login" className="text-zinc-300 hover:text-white transition-colors">Log In</Link>
-              <Link to="/register" className="btn-primary">
-                Create Vault
-              </Link>
+              <Link to="/files" className="hover:text-[#E6E9F2] transition-colors">Files</Link>
+              <Link to="/dashboard" className="hover:text-[#E6E9F2] transition-colors">Dashboard</Link>
+              <Link to="/settings" className="hover:text-[#E6E9F2] transition-colors">Security</Link>
+              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2"></div>
+              <button onClick={logout} className="hover:text-[#E6E9F2] transition-colors">Logout</button>
             </>
           )}
         </div>
@@ -100,10 +98,22 @@ function MainLayout() {
       </main>
 
       {/* Global Footer */}
-      <footer className="mt-auto py-8 text-center bg-zinc-900/10 backdrop-blur-md rounded-t-3xl border-t border-indigo-500/10 max-w-7xl mx-auto w-full">
-        <p className="text-zinc-500 text-sm">
-          &copy; {new Date().getFullYear()} SecSky. Engineered by <span className="text-indigo-400/80 font-medium">Ram Mamillapalli</span>.
-        </p>
+      <footer className="mt-auto border-t border-[rgba(255,255,255,0.06)] bg-[#05060F]">
+        <div className="max-w-[1200px] mx-auto px-[60px] py-[40px] flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="text-[#E6E9F2] font-medium">
+            SecSky
+          </div>
+          <div className="flex items-center gap-6 text-sm text-[#A0A6C3]">
+            <a href="#" className="hover:text-[#E6E9F2] transition-colors">Docs</a>
+            <a href="#" className="hover:text-[#E6E9F2] transition-colors">Privacy</a>
+            <a href="#" className="hover:text-[#E6E9F2] transition-colors">Terms</a>
+          </div>
+        </div>
+        <div className="border-t border-[rgba(255,255,255,0.03)] flex justify-center py-[24px]">
+          <p className="text-[#A0A6C3] text-sm">
+            &copy; 2026 SecSky. Engineered by Ram Mamillapalli.
+          </p>
+        </div>
       </footer>
 
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
