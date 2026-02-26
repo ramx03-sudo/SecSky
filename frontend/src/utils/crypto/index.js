@@ -61,7 +61,9 @@ export async function wrapFileKey(fileKey, masterKey, filePassword = null) {
     // If a file password is provided, we derive a key from it and use it as an intermediate wrapping key
     if (filePassword) {
         // We derive an intermediate key to wrap the file key
-        const { masterKey: derivedFilePwdKey, saltString } = await deriveMasterKey(filePassword, null);
+        const saltBytes = crypto.getRandomValues(new Uint8Array(16));
+        const generatedSaltString = btoa(String.fromCharCode(...saltBytes));
+        const { masterKey: derivedFilePwdKey, saltString } = await deriveMasterKey(filePassword, generatedSaltString);
 
         // We first wrap with the master key
         const iv1 = crypto.getRandomValues(new Uint8Array(12));
