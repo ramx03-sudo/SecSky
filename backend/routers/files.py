@@ -32,7 +32,10 @@ async def get_current_user(request: Request, db=Depends(get_db)):
 
 @router.get("/")
 async def list_files(user=Depends(get_current_user), db=Depends(get_db)):
-    files = await db.files.find({"user_id": user["_id"]}).to_list(length=100)
+    files = await db.files.find(
+        {"user_id": user["_id"]},
+        {"encrypted_blob": 0}
+    ).to_list(length=1000)
     for f in files:
         f["id"] = f.pop("_id")
     return files
@@ -117,7 +120,10 @@ async def download_file(file_id: str, user=Depends(get_current_user), db=Depends
 
 @router.get("/{file_id}")
 async def get_file_metadata(file_id: str, user=Depends(get_current_user), db=Depends(get_db)):
-    doc = await db.files.find_one({"_id": file_id, "user_id": user["_id"]})
+    doc = await db.files.find_one(
+        {"_id": file_id, "user_id": user["_id"]},
+        {"encrypted_blob": 0}
+    )
     if not doc:
         raise HTTPException(status_code=404, detail="File not found")
     doc["id"] = doc.pop("_id")
