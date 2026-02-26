@@ -12,13 +12,10 @@ export async function deriveMasterKey(password, saltString) {
         ["deriveBits", "deriveKey"]
     );
 
-    let salt;
-    if (saltString) {
-        // Convert hex string salt back to Uint8Array here or use direct base64
-        salt = Uint8Array.from(atob(saltString), c => c.charCodeAt(0));
-    } else {
-        salt = crypto.getRandomValues(new Uint8Array(16));
+    if (!saltString) {
+        throw new Error("Missing master salt. Cannot derive key.");
     }
+    const salt = Uint8Array.from(atob(saltString), c => c.charCodeAt(0));
 
     const masterKey = await crypto.subtle.deriveKey(
         {
