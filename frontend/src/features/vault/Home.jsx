@@ -22,13 +22,14 @@ export default function Home() {
     ];
 
     return (
-        <div className="flex flex-col min-h-screen relative overflow-hidden bg-[#05060F]">
+        <div className="flex flex-col min-h-screen relative overflow-hidden">
+            <div className="grid-overlay"></div>
 
             {/* HERO SECTION */}
-            <section className="pt-[140px] pb-[120px] px-[60px] max-w-[1200px] mx-auto w-full">
+            <section className="pt-[140px] pb-[120px] px-[60px] max-w-[1200px] mx-auto w-full relative z-10">
                 <div className="flex flex-col items-start text-left">
-                    <h1 className="text-[64px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] max-w-[900px] mb-6">
-                        Zero-knowledge cloud storage <br className="hidden md:block" />
+                    <h1 className="text-[72px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] max-w-[900px] mb-6">
+                        <span className="gradient-text">Zero-knowledge</span> cloud storage <br className="hidden md:block" />
                         built for serious privacy.
                     </h1>
 
@@ -41,7 +42,7 @@ export default function Home() {
                         <Link to={user ? "/files" : "/register"} className="block btn-primary">
                             {user ? "Go to Files" : "Start Free"}
                         </Link>
-                        <a href="#how-it-works" className="block bg-[rgba(20,24,45,0.6)] hover:bg-[rgba(20,24,45,0.8)] border border-[rgba(255,255,255,0.08)] text-[#E6E9F2] px-7 py-[14px] rounded-[14px] font-medium transition-colors">
+                        <a href="#how-it-works" className="block btn-secondary">
                             How it Works
                         </a>
                     </div>
@@ -49,30 +50,30 @@ export default function Home() {
             </section>
 
             {/* FEATURE GRID */}
-            <section className="border-t border-[rgba(255,255,255,0.06)] border-b pb-[120px]">
+            <section className="border-t border-[rgba(255,255,255,0.06)] border-b pb-[120px] relative z-10 section-blue">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-[80px] pt-[120px] px-[60px] max-w-[1200px] mx-auto w-full">
                     <div>
-                        <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">Client-side encryption</h2>
-                        <p className="text-[1.1rem] text-[#A0A6C3] font-normal leading-relaxed">
-                            Every file is encrypted with <span className="text-[#8A63FF]">AES-256-GCM</span> before it leaves your device. We never receive your plaintext data.
+                        <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">Client-side encryption</h2>
+                        <p className="text-[16px] text-[#A0A6C3] font-normal leading-relaxed">
+                            Every file is encrypted with <span className="accent-blue">AES-256-GCM</span> before it leaves your device. We never receive your plaintext data.
                         </p>
                     </div>
                     <div>
-                        <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">Isolated password layers</h2>
-                        <p className="text-[1.1rem] text-[#A0A6C3] font-normal leading-relaxed">
-                            Add secondary encryption to individual files or folders. Master authentication does not automatically unpack your most sensitive files.
+                        <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">Isolated password layers</h2>
+                        <p className="text-[16px] text-[#A0A6C3] font-normal leading-relaxed">
+                            Add secondary encryption to <span className="accent-green">individual files</span> or <span className="accent-purple">folders</span>. Master authentication does not automatically unpack your most sensitive files.
                         </p>
                     </div>
                 </div>
             </section>
 
             {/* SECURITY ARCHITECTURE */}
-            <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full border-b border-[rgba(255,255,255,0.06)]">
+            <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-purple">
                 <div className="grid lg:grid-cols-2 gap-[80px] items-center">
                     <div>
-                        <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Designed for total sovereignty.</h2>
-                        <p className="text-[1.1rem] text-[#A0A6C3] font-normal leading-relaxed mb-6">
-                            SecSky relies entirely on standardized Web Crypto APIS directly inside your local environment constraint.
+                        <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Designed for total sovereignty.</h2>
+                        <p className="text-[16px] text-[#A0A6C3] font-normal leading-relaxed mb-6">
+                            SecSky relies entirely on standardized <span className="accent-purple">Web Crypto APIs</span> directly inside your local environment constraint.
                         </p>
                         <ul className="space-y-4">
                             {[
@@ -112,38 +113,38 @@ export default function Home() {
             </section>
 
             {/* HOW IT WORKS */}
-            <section id="how-it-works" className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full border-b border-[rgba(255,255,255,0.06)]">
+            <section id="how-it-works" className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-green">
                 <div className="mb-16">
-                    <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">How it works</h2>
-                    <p className="text-[1.1rem] text-[#A0A6C3] font-normal">A mathematically protected pipeline.</p>
+                    <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">How it works</h2>
+                    <p className="text-[16px] text-[#A0A6C3] font-normal">A mathematically protected pipeline.</p>
                 </div>
 
                 <div className="grid md:grid-cols-3 gap-[80px]">
-                    <div className="border border-[rgba(255,255,255,0.05)] p-[40px] rounded-[16px] bg-[rgba(10,15,31,0.3)]">
-                        <h3 className="text-xl font-medium text-[#E6E9F2] mb-3">1. Derive</h3>
-                        <p className="text-[#A0A6C3] leading-relaxed">Your browser derives a crypto-master key from your secure text password locally using highly salted PBKDF2 iterations.</p>
+                    <div className="glass-card">
+                        <h3 className="text-[22px] font-medium text-[#E6E9F2] mb-3">1. Derive</h3>
+                        <p className="text-[16px] text-[#A0A6C3] leading-relaxed">Your browser derives a crypto-master key from your secure text password locally using highly salted PBKDF2 iterations.</p>
                     </div>
-                    <div className="border border-[rgba(255,255,255,0.05)] p-[40px] rounded-[16px] bg-[rgba(10,15,31,0.3)]">
-                        <h3 className="text-xl font-medium text-[#E6E9F2] mb-3">2. Encrypt</h3>
-                        <p className="text-[#A0A6C3] leading-relaxed">Files are authenticated and encrypted seamlessly in-memory inside the browser using AES-256-GCM before connecting to our APIs.</p>
+                    <div className="glass-card">
+                        <h3 className="text-[22px] font-medium text-[#E6E9F2] mb-3">2. Encrypt</h3>
+                        <p className="text-[16px] text-[#A0A6C3] leading-relaxed">Files are authenticated and encrypted seamlessly in-memory inside the browser using AES-256-GCM before connecting to <span className="gradient-text">our APIs</span>.</p>
                     </div>
-                    <div className="border border-[rgba(255,255,255,0.05)] p-[40px] rounded-[16px] bg-[rgba(10,15,31,0.3)]">
-                        <h3 className="text-xl font-medium text-[#E6E9F2] mb-3">3. Upload</h3>
-                        <p className="text-[#A0A6C3] leading-relaxed">Only the completely unreadable encrypted binary blobs leave your system. Decryption requires the same local browser environment and key.</p>
+                    <div className="glass-card">
+                        <h3 className="text-[22px] font-medium text-[#E6E9F2] mb-3">3. Upload</h3>
+                        <p className="text-[16px] text-[#A0A6C3] leading-relaxed">Only the completely unreadable encrypted binary blobs leave your system. Decryption requires the same local browser environment and key.</p>
                     </div>
                 </div>
             </section>
 
             {/* PRODUCT PREVIEW */}
-            <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full border-b border-[rgba(255,255,255,0.06)]">
+            <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-blue">
                 <div className="grid lg:grid-cols-2 gap-[80px] items-center">
                     <div>
-                        <h2 className="text-[2rem] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Built-in file manager with folder isolation</h2>
-                        <p className="text-[1.1rem] text-[#A0A6C3] font-normal leading-relaxed">
+                        <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Built-in file manager with folder isolation</h2>
+                        <p className="text-[16px] text-[#A0A6C3] font-normal leading-relaxed">
                             SecSky provides an interactive, full-stack vault interface that reconstructs nested file directories, uploads, deletes, and movements natively all while remaining opaque to the server.
                         </p>
                     </div>
-                    <div className="border border-[rgba(255,255,255,0.08)] rounded-[18px] overflow-hidden bg-[#0A0F1F] aspect-video flex flex-col items-center justify-center p-8">
+                    <div className="border border-[rgba(255,255,255,0.08)] rounded-[18px] overflow-hidden bg-[rgba(20,24,45,0.4)] aspect-video flex flex-col items-center justify-center p-8 backdrop-blur(12px)">
                         {/* Abstracted structural representation of Files UI without importing heavy image assets strictly for investor wireframing */}
                         <div className="w-full h-full border border-[rgba(124,92,255,0.15)] rounded-xl p-4 flex flex-col gap-4 relative">
                             <div className="w-1/3 h-6 bg-[rgba(255,255,255,0.05)] rounded"></div>
@@ -165,9 +166,9 @@ export default function Home() {
             </section>
 
             {/* FINAL CTA */}
-            <section className="py-[140px] px-[60px] text-center max-w-[1200px] mx-auto w-full">
-                <h2 className="text-[2rem] md:text-[3rem] font-semibold tracking-[-0.03em] text-[#E6E9F2] mb-10">Own your encryption.</h2>
-                <Link to="/register" className="inline-block btn-primary px-10 py-5 text-lg">
+            <section className="py-[140px] px-[60px] text-center max-w-[1200px] mx-auto w-full relative z-10 section-divider">
+                <h2 className="text-[40px] md:text-[64px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] mb-10">Own your encryption.</h2>
+                <Link to="/register" className="inline-block btn-primary">
                     Create Secure Vault
                 </Link>
             </section>
