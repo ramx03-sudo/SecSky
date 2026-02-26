@@ -2,7 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../auth/AuthContext';
 import { getFiles, deleteFile, uploadFile, fetchFileBlob, getFolders, createFolder, deleteFolder, renameFolder, moveFile, moveFolder } from '../../utils/api';
 import { encryptFileFlow, decryptFileFlow, decryptString, encryptString } from '../../utils/crypto';
-import { UploadCloud, File, Trash2, Download, Lock, X, Loader2, CheckCircle2, Shield, HardDrive, Calendar, Eye, Folder, FolderPlus, ChevronRight, Edit3, ArrowLeft } from 'lucide-react';
+import { UploadCloud, File, Trash2, Download, Lock, X, Loader2, CheckCircle2, Shield, HardDrive, Calendar, Eye, Folder, FolderPlus, ChevronRight, Edit3, ArrowLeft, CornerDownRight } from 'lucide-react';
 import { useDropzone } from 'react-dropzone';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,6 +56,12 @@ export default function Files() {
     const [promptPasswordForId, setPromptPasswordForId] = useState(null);
     const [downloadPassword, setDownloadPassword] = useState('');
     const [promptAction, setPromptAction] = useState('download'); // 'download' or 'view'
+
+    // Move Modal State
+    const [showMoveModal, setShowMoveModal] = useState(false);
+    const [itemToMove, setItemToMove] = useState(null); // { id: '...', type: 'file' | 'folder', name: '...' }
+    const [selectedDestinationFolder, setSelectedDestinationFolder] = useState(null);
+    const [isMoving, setIsMoving] = useState(false);
 
     // Preview Modal State
     const [previewFile, setPreviewFile] = useState(null);
@@ -165,6 +171,32 @@ export default function Files() {
             setAllFolders(allFolders.filter(f => f.id !== id));
         } catch (e) {
             toast.error("Error: " + (e.message || "Cannot delete non-empty folder"));
+        }
+    };
+
+    const handleMoveSubmit = async (e) => {
+        e.preventDefault();
+        if (!itemToMove) return;
+
+        setIsMoving(true);
+        try {
+            if (itemToMove.type === 'file') {
+                await moveFile(itemToMove.id, selectedDestinationFolder);
+            } else {
+                // Check if moving into itself or its own descendants (optional basic check)
+                if (itemToMove.id === selectedDestinationFolder) {
+                    throw new Error("Cannot move a folder into itself");
+                }
+                await moveFolder(itemToMove.id, { parent_id: selectedDestinationFolder });
+            }
+            toast.success(`${itemToMove.type === 'file' ? 'File' : 'Folder'} moved successfully`);
+            setShowMoveModal(false);
+            setItemToMove(null);
+            fetchVaultData();
+        } catch (e) {
+            toast.error('Failed to move: ' + e.message);
+        } finally {
+            setIsMoving(false);
         }
     };
 
@@ -481,6 +513,12 @@ export default function Files() {
                                     </div>
                                     <div className="flex justify-end gap-2 relative z-10 pt-4 mt-2 border-t border-zinc-800/50 opacity-0 group-hover:opacity-100 transition-opacity">
                                         <button
+                                            onClick={(e) => { e.stopPropagation(); setItemToMove({ id: f.id, type: 'folder', name: f.decryptedName }); setSelectedDestinationFolder(null); setShowMoveModal(true); }}
+                                            className="bg-zinc-800 hover:bg-indigo-500/20 text-zinc-400 hover:text-indigo-400 transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
+                                        >
+                                            <CornerDownRight className="w-3.5 h-3.5 mr-1" /> Move
+                                        </button>
+                                        <button
                                             onClick={(e) => { e.stopPropagation(); setFolderAction(f.id); setFolderName(f.decryptedName); setShowFolderModal(true); }}
                                             className="bg-zinc-800 hover:bg-indigo-500 text-zinc-400 hover:text-white transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
                                         >
@@ -558,6 +596,13 @@ export default function Files() {
                                                 {downloadingId === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Download className="w-3.5 h-3.5" /><span>Save</span></>}
                                             </button>
                                             <button
+                                                onClick={() => { setItemToMove({ id: f.id, type: 'file', name: f.decryptedName }); setSelectedDestinationFolder(null); setShowMoveModal(true); }}
+                                                className="bg-zinc-800 hover:bg-indigo-500/20 text-zinc-400 hover:text-indigo-400 transition-colors py-2 px-3 flex items-center justify-center rounded-xl"
+                                                title="Move File"
+                                            >
+                                                <CornerDownRight className="w-4 h-4" />
+                                            </button>
+                                            <button
                                                 onClick={() => handleDelete(f.id)}
                                                 className="bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 flex items-center justify-center rounded-xl"
                                                 title="Delete File"
@@ -601,6 +646,52 @@ export default function Files() {
                                     </button>
                                 </div>
                             </form>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* MOVE MODAL */}
+            <AnimatePresence>
+                {showMoveModal && itemToMove && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => !isMoving && setShowMoveModal(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }} className="bg-zinc-950 border border-zinc-800 rounded-3xl w-full max-w-sm overflow-hidden shadow-2xl relative z-10 p-6 flex flex-col max-h-[80vh]">
+                            <h3 className="text-xl font-medium text-white mb-2 flex items-center gap-2">
+                                <CornerDownRight className="w-5 h-5 text-indigo-400" />
+                                Move Item
+                            </h3>
+                            <p className="text-sm text-zinc-400 mb-4 truncate">Moving: <span className="text-white font-medium">{itemToMove.name}</span></p>
+
+                            <div className="flex-1 overflow-y-auto pr-2 mb-4 space-y-1 custom-scrollbar">
+                                <button
+                                    onClick={() => setSelectedDestinationFolder(null)}
+                                    className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${selectedDestinationFolder === null ? 'bg-indigo-500/20 border border-indigo-500/50 text-indigo-300' : 'bg-zinc-900 border border-transparent text-zinc-300 hover:bg-zinc-800'}`}
+                                >
+                                    <HardDrive className="w-5 h-5" />
+                                    <span className="font-medium truncate">Vault Root</span>
+                                </button>
+
+                                {allFolders.filter(f => f.id !== itemToMove.id).map(folder => (
+                                    <button
+                                        key={folder.id}
+                                        onClick={() => setSelectedDestinationFolder(folder.id)}
+                                        className={`w-full text-left px-4 py-3 rounded-xl flex items-center gap-3 transition-colors ${selectedDestinationFolder === folder.id ? 'bg-indigo-500/20 border border-indigo-500/50 text-indigo-300' : 'bg-zinc-900 border border-transparent text-zinc-300 hover:bg-zinc-800'}`}
+                                    >
+                                        <Folder className="w-5 h-5" />
+                                        <div className="flex flex-col overflow-hidden">
+                                            <span className="font-medium truncate">{folder.decryptedName}</span>
+                                        </div>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="flex gap-3 mt-auto pt-2 border-t border-zinc-800/50">
+                                <button onClick={() => setShowMoveModal(false)} type="button" className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white py-2.5 rounded-xl transition-colors font-medium">Cancel</button>
+                                <button onClick={handleMoveSubmit} disabled={isMoving} className="flex-1 bg-indigo-500 hover:bg-indigo-400 text-white py-2.5 rounded-xl transition-colors font-medium disabled:opacity-50 flex justify-center items-center">
+                                    {isMoving ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Move Here'}
+                                </button>
+                            </div>
                         </motion.div>
                     </div>
                 )}
