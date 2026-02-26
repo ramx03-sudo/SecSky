@@ -1,19 +1,98 @@
 @import "tailwindcss";
 
 @theme {
-  --color-zinc-900: #18181b;
-  --color-zinc-950: #09090b;
-  --color-indigo-400: #818cf8;
-  --color-indigo-500: #6366f1;
+  --color-zinc-900: #14182D;
+  --color-zinc-950: #05060F;
+  --color-indigo-400: #8A63FF;
+  --color-indigo-500: #7C5CFF;
 }
 
 @layer base {
   body {
-    background-color: var(--color-zinc-950);
-    color: #e4e4e7; /* zinc-200 */
     font-family: 'Inter', sans-serif;
+    color: #E6E9F2;
+    background: radial-gradient(
+        circle at 20% 30%,
+        rgba(124, 92, 255, 0.15),
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 80% 70%,
+        rgba(124, 92, 255, 0.08),
+        transparent 40%
+      ),
+      linear-gradient(180deg, #05060F 0%, #0A0F1F 100%);
+    background-attachment: fixed;
     margin: 0;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer components {
+  .hero-title {
+    font-size: 4.2rem;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    line-height: 1.05;
+    color: #E6E9F2;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: #E6E9F2;
+  }
+
+  .card-title {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #E6E9F2;
+  }
+
+  .secondary-text {
+    color: #A0A6C3;
+    font-weight: 400;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #7C5CFF, #6A5BFF);
+    border: none;
+    padding: 14px 28px;
+    border-radius: 14px;
+    font-weight: 500;
+    font-size: 0.95rem;
+    color: white;
+    transition: all 0.25s ease;
+  }
+
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(124, 92, 255, 0.25);
+  }
+
+  .glass-card {
+    background: rgba(20, 24, 45, 0.6);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(124, 92, 255, 0.15);
+    border-radius: 18px;
+    padding: 24px;
+    transition: all 0.25s ease;
+  }
+
+  .glass-card:hover {
+    border-color: rgba(124, 92, 255, 0.4);
+    transform: translateY(-4px);
+  }
+
+  .glow-dot {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: radial-gradient(circle, rgba(124,92,255,0.5), transparent 70%);
+    filter: blur(80px);
+    z-index: -1;
+    pointer-events: none;
   }
 }

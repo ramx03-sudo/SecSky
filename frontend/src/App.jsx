@@ -58,9 +58,9 @@ function MainLayout() {
   useVaultInactivity();
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-indigo-500/30 flex flex-col">
+    <div className="min-h-screen flex flex-col font-sans selection:bg-indigo-500/30">
       <CustomCursor />
-      <nav className="flex items-center justify-between w-full px-8 py-6 max-w-7xl mx-auto border-b border-zinc-900/50">
+      <nav className="flex items-center justify-between w-full px-8 py-6 max-w-7xl mx-auto">
         <Link to="/" className="flex items-center space-x-2">
           <Shield className="w-8 h-8 text-indigo-400" />
           <span className="text-xl font-medium tracking-tight">SecSky</span>
@@ -80,7 +80,7 @@ function MainLayout() {
           ) : (
             <>
               <Link to="/login" className="text-zinc-300 hover:text-white transition-colors">Log In</Link>
-              <Link to="/register" className="bg-indigo-500 hover:bg-indigo-400 text-white px-5 py-2.5 rounded-full transition-all duration-300 shadow-[0_0_15px_rgba(99,102,241,0.3)]">
+              <Link to="/register" className="btn-primary">
                 Create Vault
               </Link>
             </>
@@ -100,7 +100,7 @@ function MainLayout() {
       </main>
 
       {/* Global Footer */}
-      <footer className="mt-auto py-8 text-center border-t border-zinc-900/50">
+      <footer className="mt-auto py-8 text-center bg-zinc-900/10 backdrop-blur-md rounded-t-3xl border-t border-indigo-500/10 max-w-7xl mx-auto w-full">
         <p className="text-zinc-500 text-sm">
           &copy; {new Date().getFullYear()} SecSky. Engineered by <span className="text-indigo-400/80 font-medium">Ram Mamillapalli</span>.
         </p>
