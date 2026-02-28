@@ -500,13 +500,13 @@ export default function Files() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <AnimatePresence>
                             {/* Render Folders First */}
-                            {currentFoldersList.map((f, index) => (
+                            {currentFoldersList.map((f) => (
                                 <motion.div
                                     layout
-                                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, y: -15 }}
-                                    transition={{ duration: 0.3, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
                                     key={`folder-${f.id}`}
                                     className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group overflow-hidden relative shadow-lg cursor-pointer"
                                     onClick={() => setCurrentFolder(f.id)}
@@ -549,13 +549,13 @@ export default function Files() {
                             ))}
 
                             {/* Render Files */}
-                            {currentFiles.map((f, index) => (
+                            {currentFiles.map((f) => (
                                 <motion.div
                                     layout
-                                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
-                                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                                    exit={{ opacity: 0, scale: 0.95, y: -15 }}
-                                    transition={{ duration: 0.3, delay: (currentFoldersList.length + index) * 0.04, ease: [0.16, 1, 0.3, 1] }}
+                                    initial={{ opacity: 0, scale: 0.98 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.95 }}
+                                    transition={{ duration: 0.2, ease: "easeOut" }}
                                     key={`file-${f.id}`}
                                     className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/30 transition-all group overflow-hidden relative shadow-lg shadow-black/20"
                                 >

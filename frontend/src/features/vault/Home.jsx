@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { Shield, Lock, HardDrive, Key, Smartphone, ChevronDown, CheckCircle2 } from 'lucide-react';
 import { useAuth } from '../auth/AuthContext';
 import Magnetic from '../../components/Magnetic';
+import { motion } from 'framer-motion';
 
 export default function Home() {
     const { user } = useAuth();
@@ -27,7 +28,12 @@ export default function Home() {
 
             {/* HERO SECTION */}
             <section className="pt-[140px] pb-[100px] px-[60px] max-w-[1200px] mx-auto w-full relative z-10">
-                <div className="flex flex-col items-start text-left">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.8, ease: "easeOut" }}
+                    className="flex flex-col items-start text-left"
+                >
                     <h1 className="text-[72px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] max-w-[900px] mb-6">
                         <span className="gradient-text">Zero-knowledge</span> cloud storage <br className="hidden md:block" />
                         built for serious privacy.
@@ -50,12 +56,18 @@ export default function Home() {
                             How It Works
                         </a>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* WHAT IS SECSKY / WHY THIS MATTERS */}
             <section className="border-t border-[rgba(255,255,255,0.06)] border-b pb-[120px] relative z-10 section-blue">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-[80px] pt-[120px] px-[60px] max-w-[1200px] mx-auto w-full">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid grid-cols-1 md:grid-cols-2 gap-[80px] pt-[120px] px-[60px] max-w-[1200px] mx-auto w-full"
+                >
                     <div>
                         <div className="text-[12px] font-mono tracking-wider text-[#8A63FF] uppercase mb-4">What Is SecSky?</div>
                         <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Privacy infrastructure, not just storage.</h2>
@@ -96,12 +108,18 @@ export default function Home() {
                             This is cryptographic sovereignty.
                         </p>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* SECURITY ARCHITECTURE */}
             <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-purple">
-                <div className="grid lg:grid-cols-2 gap-[80px] items-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid lg:grid-cols-2 gap-[80px] items-center"
+                >
                     <div>
                         <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Designed for total sovereignty.</h2>
                         <p className="text-[16px] text-[#A0A6C3] font-normal leading-relaxed mb-6">
@@ -141,18 +159,30 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* HOW IT WORKS */}
             <section id="how-it-works" className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-green">
-                <div className="mb-16 max-w-[800px]">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="mb-16 max-w-[800px]"
+                >
                     <div className="text-[12px] font-mono tracking-wider text-[#4FD1C5] uppercase mb-4">How It Works (User Flow)</div>
                     <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-4">A mathematically protected pipeline.</h2>
                     <p className="text-[16px] text-[#A0A6C3] font-normal">SecSky operates through a deterministic browser-based security model engineered by Ram Mamillapalli.</p>
-                </div>
+                </motion.div>
 
-                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-[40px]">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid md:grid-cols-2 lg:grid-cols-3 gap-[40px]"
+                >
                     {/* 1 */}
                     <div className="glass-card flex flex-col">
                         <div className="text-[14px] text-[#4FD1C5] font-mono mb-2">01</div>
@@ -195,12 +225,18 @@ export default function Home() {
                         <p className="text-[15px] text-[#A0A6C3] leading-relaxed mb-4">Encrypted blob is fetched. Wrapped key is unwrapped using your master key. AES-256-GCM decrypts in memory.</p>
                         <p className="text-[13px] text-[#A0A6C3] font-mono opacity-80 border-t border-[rgba(255,255,255,0.06)] pt-4 mt-auto">Lose the password → data destroyed permanently. No backdoors.</p>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* SYSTEM ARCHITECTURE & PRODUCT EXPERIENCE */}
             <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-purple">
-                <div className="grid lg:grid-cols-2 gap-[80px] items-start">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid lg:grid-cols-2 gap-[80px] items-start"
+                >
                     <div>
                         <div className="text-[12px] font-mono tracking-wider text-[#8A63FF] uppercase mb-4">Product Experience</div>
                         <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Built-in file manager with folder isolation.</h2>
@@ -261,12 +297,18 @@ export default function Home() {
                             </div>
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* SECURITY GUARANTEES & BRANDING SECTION */}
             <section className="py-[120px] px-[60px] max-w-[1200px] mx-auto w-full section-divider relative z-10 section-blue">
-                <div className="grid lg:grid-cols-2 gap-[80px] items-center">
+                <motion.div
+                    initial={{ opacity: 0, y: 40 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                    className="grid lg:grid-cols-2 gap-[80px] items-center"
+                >
                     <div>
                         <div className="text-[12px] font-mono tracking-wider text-[#63B3ED] uppercase mb-4">Authority Security</div>
                         <h2 className="text-[40px] font-semibold tracking-[-0.02em] text-[#E6E9F2] mb-6">Security Guarantees</h2>
@@ -304,16 +346,23 @@ export default function Home() {
                             This is not a wrapper over third-party encryption. It is a purpose-built security system.
                         </p>
                     </div>
-                </div>
+                </motion.div>
             </section>
 
             {/* FINAL CTA */}
             <section className="py-[140px] px-[60px] text-center max-w-[1200px] mx-auto w-full relative z-10 section-divider">
-                <h2 className="text-[40px] md:text-[64px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] mb-10">Own your encryption.</h2>
-                <Link to="/register" className="inline-block btn-primary mb-8 text-[18px] px-10 py-5">
-                    Create Secure Vault
-                </Link>
-                <p className="text-[14px] text-[#A0A6C3] font-mono opacity-80 mt-4">Built with cryptographic integrity by Ram Mamillapalli.</p>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    viewport={{ once: true, margin: "-100px" }}
+                    transition={{ duration: 0.7, ease: "easeOut" }}
+                >
+                    <h2 className="text-[40px] md:text-[64px] font-semibold tracking-[-0.04em] leading-[1.05] text-[#E6E9F2] mb-10">Own your encryption.</h2>
+                    <Link to="/register" className="inline-block btn-primary mb-8 text-[18px] px-10 py-5">
+                        Create Secure Vault
+                    </Link>
+                    <p className="text-[14px] text-[#A0A6C3] font-mono opacity-80 mt-4">Built with cryptographic integrity by Ram Mamillapalli.</p>
+                </motion.div>
             </section>
 
         </div>
