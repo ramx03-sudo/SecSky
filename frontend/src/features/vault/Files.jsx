@@ -412,7 +412,13 @@ export default function Files() {
     const totalSize = allFiles.reduce((acc, f) => acc + (f.file_size || 0), 0);
 
     return (
-        <div className="max-w-7xl mx-auto px-8 py-10 min-h-[85vh] relative" {...getRootProps()}>
+        <motion.div
+            initial={{ opacity: 0, scale: 0.98, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-7xl mx-auto px-8 py-10 min-h-[85vh] relative"
+            {...getRootProps()}
+        >
             <input {...getInputProps()} />
 
             {/* Drag Overlay */}
@@ -454,22 +460,26 @@ export default function Files() {
                     </div>
                 </div>
                 <div className="flex gap-3 relative z-10">
-                    <button
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={() => { setFolderAction('create'); setFolderName(''); setShowFolderModal(true); }}
                         disabled={!masterKey}
                         className="bg-zinc-800 hover:bg-zinc-700 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg flex items-center space-x-2 disabled:opacity-50"
                     >
                         <FolderPlus className="w-5 h-5 text-indigo-400" />
                         <span>New Folder</span>
-                    </button>
-                    <button
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.95 }}
                         onClick={openFileDialog}
                         disabled={!masterKey}
                         className="bg-indigo-500 hover:bg-indigo-400 text-white px-6 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-indigo-500/20 flex items-center space-x-2 disabled:opacity-50"
                     >
                         <UploadCloud className="w-5 h-5" />
                         <span>Upload File</span>
-                    </button>
+                    </motion.button>
                 </div>
             </div>
 
@@ -490,12 +500,13 @@ export default function Files() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         <AnimatePresence>
                             {/* Render Folders First */}
-                            {currentFoldersList.map(f => (
+                            {currentFoldersList.map((f, index) => (
                                 <motion.div
                                     layout
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -15 }}
+                                    transition={{ duration: 0.3, delay: index * 0.04, ease: [0.16, 1, 0.3, 1] }}
                                     key={`folder-${f.id}`}
                                     className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/50 transition-all group overflow-hidden relative shadow-lg cursor-pointer"
                                     onClick={() => setCurrentFolder(f.id)}
@@ -512,35 +523,39 @@ export default function Files() {
                                         </div>
                                     </div>
                                     <div className="flex justify-end gap-2 relative z-10 pt-4 mt-2 border-t border-zinc-800/50 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <button
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={(e) => { e.stopPropagation(); setItemToMove({ id: f.id, type: 'folder', name: f.decryptedName }); setSelectedDestinationFolder(null); setShowMoveModal(true); }}
                                             className="bg-zinc-800 hover:bg-indigo-500/20 text-zinc-400 hover:text-indigo-400 transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
                                         >
                                             <CornerDownRight className="w-3.5 h-3.5 mr-1" /> Move
-                                        </button>
-                                        <button
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={(e) => { e.stopPropagation(); setFolderAction(f.id); setFolderName(f.decryptedName); setShowFolderModal(true); }}
                                             className="bg-zinc-800 hover:bg-indigo-500 text-zinc-400 hover:text-white transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
                                         >
                                             <Edit3 className="w-3.5 h-3.5 mr-1" /> Rename
-                                        </button>
-                                        <button
+                                        </motion.button>
+                                        <motion.button
+                                            whileTap={{ scale: 0.95 }}
                                             onClick={(e) => handleDeleteFolder(f.id, e)}
                                             className="bg-zinc-800 hover:bg-red-500 text-zinc-400 hover:text-white transition-colors py-1.5 px-3 flex items-center justify-center rounded-lg text-xs font-medium"
                                         >
                                             <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
-                                        </button>
+                                        </motion.button>
                                     </div>
                                 </motion.div>
                             ))}
 
                             {/* Render Files */}
-                            {currentFiles.map(f => (
+                            {currentFiles.map((f, index) => (
                                 <motion.div
                                     layout
-                                    initial={{ opacity: 0, scale: 0.95 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    initial={{ opacity: 0, scale: 0.95, y: 15 }}
+                                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                                    exit={{ opacity: 0, scale: 0.95, y: -15 }}
+                                    transition={{ duration: 0.3, delay: (currentFoldersList.length + index) * 0.04, ease: [0.16, 1, 0.3, 1] }}
                                     key={`file-${f.id}`}
                                     className="bg-zinc-900 border border-zinc-800/80 rounded-2xl p-5 hover:border-indigo-500/30 transition-all group overflow-hidden relative shadow-lg shadow-black/20"
                                 >
@@ -581,34 +596,38 @@ export default function Files() {
                                         </motion.div>
                                     ) : (
                                         <div className="flex gap-2 relative z-0 mt-2">
-                                            <button
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={() => handleViewClick(f)}
                                                 disabled={viewingId === f.id}
                                                 className="flex-1 bg-zinc-800 hover:bg-emerald-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-xs transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
                                             >
                                                 {viewingId === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Eye className="w-3.5 h-3.5" /><span>View</span></>}
-                                            </button>
-                                            <button
+                                            </motion.button>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={() => handleDownloadClick(f)}
                                                 disabled={downloadingId === f.id}
                                                 className="flex-1 bg-zinc-800 hover:bg-indigo-500 text-zinc-300 hover:text-white font-medium py-2 rounded-xl text-xs transition-all flex items-center justify-center space-x-1 disabled:opacity-50"
                                             >
                                                 {downloadingId === f.id ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <><Download className="w-3.5 h-3.5" /><span>Save</span></>}
-                                            </button>
-                                            <button
+                                            </motion.button>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={() => { setItemToMove({ id: f.id, type: 'file', name: f.decryptedName }); setSelectedDestinationFolder(null); setShowMoveModal(true); }}
                                                 className="bg-zinc-800 hover:bg-indigo-500/20 text-zinc-400 hover:text-indigo-400 transition-colors py-2 px-3 flex items-center justify-center rounded-xl"
                                                 title="Move File"
                                             >
                                                 <CornerDownRight className="w-4 h-4" />
-                                            </button>
-                                            <button
+                                            </motion.button>
+                                            <motion.button
+                                                whileTap={{ scale: 0.95 }}
                                                 onClick={() => handleDelete(f.id)}
                                                 className="bg-zinc-800 hover:bg-red-500/20 text-zinc-400 hover:text-red-400 transition-colors py-2 px-3 flex items-center justify-center rounded-xl"
                                                 title="Delete File"
                                             >
                                                 <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            </motion.button>
                                         </div>
                                     )}
                                 </motion.div>
@@ -854,6 +873,6 @@ export default function Files() {
                     </div>
                 )}
             </AnimatePresence>
-        </div>
+        </motion.div>
     );
 }

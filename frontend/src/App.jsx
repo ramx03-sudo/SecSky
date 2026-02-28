@@ -1,4 +1,5 @@
-import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate, useLocation, NavLink } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Shield, Github } from 'lucide-react';
 import { AuthProvider, useAuth } from './features/auth/AuthContext';
 import Home from './features/vault/Home';
@@ -51,6 +52,26 @@ function PrivateRoute({ children }) {
   return children;
 }
 
+function NavItem({ to, children }) {
+  return (
+    <NavLink to={to} className={({ isActive }) => `relative px-3 py-1.5 transition-colors font-medium text-[15px] ${isActive ? 'text-white' : 'text-[#A0A6C3] hover:text-[#E6E9F2]'}`}>
+      {({ isActive }) => (
+        <>
+          <span className="relative z-10">{children}</span>
+          {isActive && (
+            <motion.div
+              layoutId="navTab"
+              className="absolute inset-0 bg-indigo-500/20 border border-indigo-500/30 rounded-lg"
+              initial={false}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+            />
+          )}
+        </>
+      )}
+    </NavLink>
+  );
+}
+
 function MainLayout() {
   const { user, logout } = useAuth();
   const [showAbout, setShowAbout] = useState(false);
@@ -60,41 +81,34 @@ function MainLayout() {
   return (
     <div className="min-h-screen flex flex-col font-sans selection:bg-indigo-500/30">
       <CustomCursor />
-      <nav className="h-[80px] flex items-center justify-between w-full px-[60px] max-w-[1200px] mx-auto">
+      <nav className="h-[80px] flex items-center justify-between w-full px-[60px] max-w-[1200px] mx-auto z-50 relative">
         <Link to="/" className="flex items-center space-x-2">
           <span className="text-xl font-medium tracking-tight text-[#E6E9F2]">SecSky</span>
         </Link>
-        <div className="flex items-center gap-6 text-[15px] font-medium text-[#A0A6C3]">
+        <div className="flex items-center gap-2 md:gap-4 lg:gap-6 text-[15px] font-medium text-[#A0A6C3]">
           {!user ? (
             <>
-              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Product</button>
-              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Security</button>
-              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors">Docs</button>
-              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2"></div>
-              <Link to="/login" className="hover:text-[#E6E9F2] transition-colors">Log In</Link>
-              <Link to="/register" className="btn-primary py-2.5 px-6">Sign Up</Link>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors px-3 py-1.5">Product</button>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors px-3 py-1.5">Security</button>
+              <button onClick={() => setShowAbout(true)} className="hover:text-[#E6E9F2] transition-colors px-3 py-1.5">Docs</button>
+              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2 hidden sm:block"></div>
+              <Link to="/login" className="hover:text-[#E6E9F2] transition-colors px-3 py-1.5">Log In</Link>
+              <Link to="/register" className="btn-primary py-2 px-5 ml-2">Sign Up</Link>
             </>
           ) : (
             <>
-              <Link to="/files" className="hover:text-[#E6E9F2] transition-colors">Files</Link>
-              <Link to="/dashboard" className="hover:text-[#E6E9F2] transition-colors">Dashboard</Link>
-              <Link to="/settings" className="hover:text-[#E6E9F2] transition-colors">Security</Link>
-              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2"></div>
-              <button onClick={logout} className="hover:text-[#E6E9F2] transition-colors">Logout</button>
+              <NavItem to="/files">Files</NavItem>
+              <NavItem to="/dashboard">Dashboard</NavItem>
+              <NavItem to="/settings">Security</NavItem>
+              <div className="w-px h-4 bg-[rgba(255,255,255,0.1)] mx-2 hidden sm:block"></div>
+              <button onClick={logout} className="hover:text-[#E6E9F2] transition-colors px-3 py-1.5">Logout</button>
             </>
           )}
         </div>
       </nav>
 
-      <main>
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/files" element={<PrivateRoute><Files /></PrivateRoute>} />
-          <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
-        </Routes>
+      <main className="flex-1">
+        <AnimatedRoutes />
       </main>
 
       {/* Global Footer */}
@@ -124,6 +138,36 @@ function MainLayout() {
 
       <AboutModal isOpen={showAbout} onClose={() => setShowAbout(false)} />
     </div >
+  );
+}
+
+function PageTransition({ children }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 15, scale: 0.99 }}
+      animate={{ opacity: 1, y: 0, scale: 1 }}
+      exit={{ opacity: 0, y: -15, scale: 0.99 }}
+      transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+      className="h-full w-full"
+    >
+      {children}
+    </motion.div>
+  );
+}
+
+function AnimatedRoutes() {
+  const location = useLocation();
+  return (
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
+        <Route path="/" element={<PageTransition><Home /></PageTransition>} />
+        <Route path="/login" element={<PageTransition><Login /></PageTransition>} />
+        <Route path="/register" element={<PageTransition><Register /></PageTransition>} />
+        <Route path="/dashboard" element={<PrivateRoute><PageTransition><Dashboard /></PageTransition></PrivateRoute>} />
+        <Route path="/files" element={<PrivateRoute><PageTransition><Files /></PageTransition></PrivateRoute>} />
+        <Route path="/settings" element={<PrivateRoute><PageTransition><Settings /></PageTransition></PrivateRoute>} />
+      </Routes>
+    </AnimatePresence>
   );
 }
 
